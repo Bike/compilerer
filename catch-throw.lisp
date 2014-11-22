@@ -1,0 +1,11 @@
+(defun compile-catch (tag body lexenv)
+  (let ((tag (compile-form tag lexenv))
+	(body (compile-form body lexenv)))
+    (lambda (frame)
+      (catch (funcall tag frame) (funcall body frame)))))
+
+(defun compile-throw (tag result lexenv)
+  (let ((tag (compile-form tag lexenv))
+	(res (compile-form result lexenv)))
+    (lambda (frame)
+      (throw (funcall tag frame) (funcall res frame)))))

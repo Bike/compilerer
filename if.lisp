@@ -1,0 +1,8 @@
+(defun compile-if (test then else lexenv)
+  (let ((test (compile-form test lexenv))
+	(then (compile-form then lexenv))
+	(else (compile-form else lexenv)))
+    (lambda (frame)
+      (if (funcall test frame)
+	  (funcall then frame)
+	  (funcall else frame)))))
