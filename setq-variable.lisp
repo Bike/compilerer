@@ -12,20 +12,29 @@ Suitable for simple lambdas and LET, but not LET* or ll keywords."
 ;; extend with decl info (eg types) in the future?
   vars)
 
+(defun specialp (symbol env)
+  ;; only returns T if the symbol is DEFINITELY special.
+  (climbing-lexenv env
+    (empty-lexenv
+     ;; there's no way to check if a symbol is known special
+     ;;  in the host lisp, so we kinda... bullshit it.
+     (return (boundp symbol)))
+    (lexenv)))
+
 (defun lookup-symbol (symbol lexenv)
   ;; symbol is guaranteed already macroexpanded
-  (climbing-lexenv lexenv i
-    (empty-lexenv
-     (unless (boundp symbol)
-       ;; there's no way to check if a symbol is known special
-       ;; (in the host lisp)
-       ;; so we kinda... bullshit it.
-       (warn "unbound variable ~a" symbol))
-     (return 'special))
-    (simple-var-lexenv
-     (let ((maybe (position symbol (simple-var-lexenv-vars lexenv))))
-       (when maybe
-	 (return (values lexenv maybe i)))))))
+  (let ((i 0))
+    (climbing-lexenv lexenv
+      (empty-lexenv
+       ;; total guess :(
+       (return 'special))
+      (simple-var-lexenv
+       (let ((maybe (position symbol (simple-var-lexenv-vars lexenv))))
+	 (if maybe
+	     (return (values lexenv maybe i))
+	     (incf i))))
+      (compiler-lexenv) ; don't increment
+      (lexenv (incf i)))))
 
 (defun compile-symbol (symbol lexenv)
   (multiple-value-bind (env pos depth)

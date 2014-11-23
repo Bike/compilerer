@@ -1,4 +1,6 @@
 (defpackage #:compilerer
   (:use "CL" "ALEXANDRIA")
+  (:shadow "MACRO-FUNCTION" "MACROEXPAND" "MACROEXPAND-1"
+	   "COMPILER-MACRO-FUNCTION")
   (:export "COMPILE-FORM" "COMPILE-FORM*" "COMPILE-CONS"
 	   "EXEC"))

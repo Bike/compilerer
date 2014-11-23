@@ -8,7 +8,13 @@
 
 (deftype empty-lexenv () 'null)
 
-(defmacro climbing-lexenv (lexenv count &body body)
-  `(loop for ,lexenv = ,lexenv then (lexenv-parent ,lexenv)
-      for ,count from 0
-      do (etypecase ,lexenv ,@body)))
+(deftype lexenv-designator () '(or lexenv empty-lexenv))
+
+(defstruct (compiler-lexenv (:include lexenv))
+  "A lexenv that doesn't have runtime frames, e.g. macro environments.")
+
+(defmacro climbing-lexenv (lexenv &body body)
+  (let ((senv (gensym "ENV")))
+    `(let ((,senv ,lexenv))
+       (loop for ,lexenv = ,senv then (lexenv-parent ,lexenv)
+	  do (etypecase ,lexenv ,@body)))))

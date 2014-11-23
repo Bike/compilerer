@@ -45,7 +45,7 @@
 	 (tags ; an alist: tag -> integer
 	  (loop for i from 0 for body in (rest parsed)
 	     collect (cons (first body) i)))
-	 (env (make-tagbody-lexenv ctag tags lexenv))
+	 (env (make-tagbody-lexenv :parent lexenv :ctag ctag :tags tags))
 	 (main (compile-progn (first parsed) env))
 	 (destinations (make-array (length tags))))
     (map-into destinations (lambda (b) (compile-progn (rest b) env))
@@ -62,7 +62,7 @@
     nil))
 
 (defun compile-go (tag lexenv)
-  (climbing-lexenv lexenv ignore
+  (climbing-lexenv lexenv
     (empty-lexenv (error "Attempted to GO to nonexistent tag ~a" tag))
     (tagbody-lexenv
      ;; "Tags are compared with eql", which i guess should be "as by"
@@ -71,4 +71,4 @@
 	 (return ;; just hope host factors out unused variables
 	   (let ((ctag (tagbody-lexenv-ctag lexenv))
 		 (id (cdr maybe)))
-	     (lambda (frame) (throw ctag id)))))))))
+	     (lambda (frame) (declare (ignore frame)) (throw ctag id)))))))))

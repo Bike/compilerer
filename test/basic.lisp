@@ -43,4 +43,7 @@
   (agrees (progn (print 'foo) (+ 18 19))))
 
 (test lambda-simple
-  (is-true (funcall (exec (compile-form* '#'(lambda () nil))))))
+  (is-true (funcall (exec (compile-form* '#'(lambda () t)))))
+  (let ((x (random 10)))
+    (is (= x (funcall (exec (compile-form* '#'(lambda (x) x))) x)))
+    (is (= x (exec (compile-form* `(funcall #'(lambda (x) x) ,x)))))))

@@ -12,7 +12,7 @@
   (ctag (initarg-not-provided) :type symbol))
 
 (defun find-block-tag (lexenv name)
-  (climbing-lexenv lexenv ignore
+  (climbing-lexenv lexenv
     (empty-lexenv (error "Missing block tag ~a" name))
     (block-lexenv
      (when (eql name (block-lexenv-name lexenv))
