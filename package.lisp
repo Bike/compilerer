@@ -1,3 +1,4 @@
 (defpackage #:compilerer
-  (:use #:CL #:alexandria)
-  (:export))
+  (:use "CL" "ALEXANDRIA")
+  (:export "COMPILE-FORM" "COMPILE-FORM*" "COMPILE-CONS"
+	   "EXEC"))

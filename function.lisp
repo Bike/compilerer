@@ -10,7 +10,7 @@
 (defun compile-function (thing lexenv)
   (etypecase thing
     (function-name (compile-flookup thing lexenv))
-    ((cons (eql 'lambda))
+    ((cons (eql lambda))
      (compile-lambda (second thing) (cddr thing) lexenv))))
 
 (defun compile-flookup (name lexenv)

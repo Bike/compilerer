@@ -1,9 +1,12 @@
 (in-package #:compilerer)
 
-(defstruct lexenv
-  (parent :type lexenv))
+(defun initarg-not-provided ()
+  (error "Internal bug: tried to make a struct without providing arg"))
 
-(defstruct (empty-lexenv (:include lexenv)))
+(defstruct lexenv
+  (parent (initarg-not-provided) :type (or lexenv null)))
+
+(deftype empty-lexenv () 'null)
 
 (defmacro climbing-lexenv (lexenv count &body body)
   `(loop for ,lexenv = ,lexenv then (lexenv-parent ,lexenv)

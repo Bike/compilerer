@@ -1,6 +1,7 @@
 (asdf:defsystem #:compilerer
   :depends-on (#:alexandria)
   :components ((:file "package")
+	       (:file "interface" :depends-on ("package" "form"))
 	       (:file "lexenv" :depends-on ("package"))
 	       (:file "form" :depends-on ("package"))
 	       (:file "constant" :depends-on ("form" "package"))
@@ -10,7 +11,7 @@
 	       (:file "lambda"
 		      :depends-on ("progn"
 				   "setq-variable" ; for lookup-symbol
-				   "lexenv" "package")
+				   "lexenv" "package"))
 	       (:file "catch-throw" :depends-on ("form" "package"))
 	       (:file "if" :depends-on ("form" "package"))
 	       (:file "setq-variable"
@@ -18,4 +19,6 @@
 	       (:file "tagbody-go"
 		      :depends-on ("form" "lexenv" "package"))
 	       (:file "block-return-from"
-		      :depends-on ("form" "lexenv" "package"))))
+		      :depends-on ("form" "lexenv" "package")))
+  :in-order-to ((asdf:test-op (asdf:load-op compilerer-test)))
+  :perform (asdf:test-op :after (op c) (asdf:test-system :compilerer-test)))

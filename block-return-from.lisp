@@ -8,8 +8,8 @@
   (compile-block (second operands) (third operands) lexenv))
 
 (defstruct (block-lexenv (:include lexenv))
-  (name :type symbol)
-  (ctag :type symbol))
+  (name (initarg-not-provided) :type symbol)
+  (ctag (initarg-not-provided) :type symbol))
 
 (defun find-block-tag (lexenv name)
   (climbing-lexenv lexenv ignore
@@ -20,9 +20,9 @@
 
 (defun compile-block (name forms lexenv)
   (compile-progn forms (make-block-lexenv
-			lexenv
-			name
-			(gensym (concatenate 'string "BLOCK-" name)))))
+			:parent lexenv
+			:name name
+			:ctag (gensym (concatenate 'string "BLOCK-" name)))))
 
 (defun compile-return-from (name values-form lexenv)
   (let ((ctag (find-block-tag lexenv name))

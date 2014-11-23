@@ -5,12 +5,13 @@
 
 ;; useful for e.g. setq
 (defun compile-seq (thunks)
-  (let* ((len (length forms))
+  (let* ((len (length thunks))
 	 (compiled (make-array len :initial-contents thunks))
 	 ;; there are better ways to do this, to say the least
 	 lazy)
     (lambda (frame)
-      (loop for i from 0 do (setf lazy (funcall (aref compiled i) frame))
+      (loop for i from 0 below len
+	 do (setf lazy (funcall (aref compiled i) frame))
 	 finally (return lazy)))))
 
 (defun compile-progn (forms lexenv)

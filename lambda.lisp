@@ -13,7 +13,7 @@
   ;; partly because it's a common case, partly practice
   ;; also no decls
   (let* ((len (make-array (length llist)))
-	 (env (make-simple-var-lexenv lexenv llist))
+	 (env (make-simple-var-lexenv :parent lexenv :vars llist))
 	 (body (compile-progn body env)))
     (lambda (frame)
       ;; this thunk constructs a host lisp lambda.
