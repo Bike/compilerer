@@ -1,16 +1,31 @@
+(in-package #:compilerer)
+
+(defmethod compile-form ((form symbol) lexenv)
+  (compile-symbol form lexenv))
+
+(defmethod compile-cons ((operator (eql 'setq)) operands lexenv)
+  (compile-setq operands lexenv))
+
+(defstruct (simple-var-lexenv (:include lexenv))
+  "A lambda list with no special variables or partial binding.
+Suitable for simple lambdas and LET, but not LET* or ll keywords."
+;; extend with decl info (eg types) in the future?
+  vars)
+
 (defun lookup-symbol (symbol lexenv)
   ;; symbol is guaranteed already macroexpanded
-  (loop for lexenv = lexenv then (lexenv-parent lexenv)
-     for i from 0
-     when (empty-lexenv-p lexenv)
-     ;; toplevel constants and stuff actually. boo.
-     do (warn "unbound variable ~a" symbol) (return 'special)
-     when (and (svar-lexenv-p lexenv) (find symbol (svar-lexenv-vars lexenv)))
-     return 'special
-     when (lvar-lexenv-p lexenv)
-     do (let ((maybe (position symbol (lvar-lexenv-vars lexenv))))
-	  (when maybe
-	    (return (values lexenv maybe i))))))
+  (climbing-lexenv lexenv i
+    (empty-lexenv
+     (unless (boundp symbol)
+       ;; there's no way to check if a symbol is known special
+       ;; (in the host lisp)
+       ;; so we kinda... bullshit it.
+       (warn "unbound variable ~a" symbol))
+     (return 'special))
+    (simple-var-lexenv
+     (let ((maybe (position symbol (simple-var-lexenv-vars lexenv))))
+       (when maybe
+	 (return (values lexenv maybe i)))))))
 
 (defun compile-symbol (symbol lexenv)
   (multiple-value-bind (env pos depth)

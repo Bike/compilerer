@@ -1,7 +1,15 @@
-;; imaginary closure compiler
-;; interface is hopefully intuitive, e.g. (compile-<thing> stuff lexenv)
+(in-package #:compilerer)
 
-(deftype closure-compiled () '(function (vector) *))
+(defmethod compile-cons ((operator (eql 'tagbody)) operands lexenv)
+  (compile-tagbody operands lexenv))
+
+(defmethod compile-cons ((operator (eql 'go)) operands lexenv)
+  (assert (= (length operands) 1))
+  (compile-go (first operands) lexenv))
+
+(defstruct (tagbody-lexenv (:include lexenv))
+  tags
+  ctag)
 
 (defun parse-tagbody (statements)
   (let ((parsed (list nil)))
@@ -15,48 +23,52 @@
 ;; example: (parse-tagbody '((print 'out-of-loop) :infty (print 'loop) (go :infty)))
 #||
 (((PRINT 'OUT-OF-LOOP) (:GO INFTY))
- ((:INFTY (PRINT 'LOOP) (GO :INFTY)))
+ (:INFTY (PRINT 'LOOP) (GO :INFTY)))
 ||#
 
-;; tagbody-lexenv can be a struct with three fields, one of which is the parent
-;; accessors etc. are named in the normal way
+;;; as for the actual operation. We have one thunk we're at,
+;;; "dest", which is main to begin with.
+;;; We call it. Three possibilities:
+;;; 1) it just ends. we return-from out and return nil.
+;;; 2) control is transferred past the tagbody
+;;;    (e.g. to a higher tagbody or block).
+;;;    in this case we don't need to do anything more.
+;;; 3) it GOes to this tagbody. GOing means THROWing
+;;;    an integer ID to this (catch ctag ...).
+;;;    the integer ID is an index of a thunk.
+;;;    so, we set this new thunk to be "dest", and repeat.
+;;; This should work with weird situations like GOs from closures.
 
 (defun compile-tagbody (statements lexenv)
   (let* ((parsed (parse-tagbody statements))
 	 (ctag (gensym "TAGBODY"))
-	 (tags (loop for i from 0 for body in (rest parsed)
-		  collect (cons (first body) i)))
-	 (env (make-tagbody-lexenv ctag tags lexenv)))
-    (let ((main (compile-progn (first parsed) env))
-	  (destinations (make-array (length tags) :element-type 'closure-compiled)))
-      (loop for i below (length tags)
-	 for body in (rest parsed)
-	 do (setf (aref destinations i)
-		  (compile-progn (rest body) env)))
-      (lambda (frame)
-	(block normal-return
-	  (let ((dest main))
-	    (loop
-	       ;; the aref can't fail since we're making sure everything's cool
-	       ;; at compile time
-	       (setf dest (aref destinations
-				(catch ctag
-				  (return-from normal-return (funcall dest frame)))))))
-	  ;; tagbody can't return anything but nil
-	  nil)))))
+	 (tags ; an alist: tag -> integer
+	  (loop for i from 0 for body in (rest parsed)
+	     collect (cons (first body) i)))
+	 (env (make-tagbody-lexenv ctag tags lexenv))
+	 (main (compile-progn (first parsed) env))
+	 (destinations (make-array (length tags))))
+    (map-into destinations (lambda (b) (compile-progn (rest b) env))
+	      (rest parsed))
+    (lambda (frame)
+      (block normal-return
+	(loop
+	   ;; this is a "clever" replacement for (loop (setf dest ...))
+	   for dest = main then
+	     (aref destinations
+		   (catch ctag
+		     (return-from normal-return (funcall dest frame)))))))
+    ;; tagbody can't return anything but nil
+    nil))
 
 (defun compile-go (tag lexenv)
-  ;; hopefully this would be factored out into a function,
-  ;; but i'll write out a loop to make things clear, hopefully.
-  (multiple-value-bind (env id)
-      (loop for e = lexenv then (lexenv-parent lexenv)
-	 when (empty-environment-p e)
-	 do (error "Attempted to GO to nonexistent tag ~a" tag)
-	 when (tagbody-lexenv-p e)
-	 ;; "Tags are compared with eql", which i guess should be "as by"
-	 do (let ((maybe (assoc tag (tagbody-lexenv-tags e))))
-	      (when maybe
-		(return (values e (cdr maybe))))))
-    (let ((ctag (tagbody-lexenv-ctag env)))
-      (lambda (frame)
-	(throw ctag id)))))
+  (climbing-lexenv lexenv ignore
+    (empty-lexenv (error "Attempted to GO to nonexistent tag ~a" tag))
+    (tagbody-lexenv
+     ;; "Tags are compared with eql", which i guess should be "as by"
+     (let ((maybe (assoc tag (tagbody-lexenv-tags lexenv))))
+       (when maybe
+	 (return ;; just hope host factors out unused variables
+	   (let ((ctag (tagbody-lexenv-ctag lexenv))
+		 (id (cdr maybe)))
+	     (lambda (frame) (throw ctag id)))))))))

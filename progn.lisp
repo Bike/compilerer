@@ -1,8 +1,12 @@
+(in-package #:compilerer)
+
+(defmethod compile-cons ((operator (eql 'progn)) operands lexenv)
+  (compile-progn operands lexenv))
+
 ;; useful for e.g. setq
 (defun compile-seq (thunks)
   (let* ((len (length forms))
-	 (compiled (make-array len :element-type 'closure-compiled
-			       :initial-contents thunks))
+	 (compiled (make-array len :initial-contents thunks))
 	 ;; there are better ways to do this, to say the least
 	 lazy)
     (lambda (frame)

@@ -1,12 +1,9 @@
-(defun compile-form (form lexenv)
-  (let ((form (macroexpand form lexenv)))
-    (typecase form
-      (symbol (compile-symbol form lexenv))
-      (cons (etypecase (car form)
-	      ((cons (eql lambda)) (compile-lambda-form form lexenv))
-	      ((satisfies special-operator-p) (compile-special-form form lexenv))
-	      (symbol (compile-call form lexenv))))
-      (t (compile-constant form)))))
+(in-package #:compilerer)
 
-(defun compile-special-form (form lexenv)
+(defgeneric compile-form (form lexenv)
+  (:method :around (form lexenv)
+    (call-next-method (macroexpand form lexenv) lexenv))
+  (:method ((form cons) lexenv)
+    (compile-cons (first form) (rest form) lexenv)))
 
+(defgeneric compile-cons (operator operands lexenv))

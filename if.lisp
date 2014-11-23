@@ -1,3 +1,10 @@
+(in-package #:compilerer)
+
+(defmethod compile-cons ((operator (eql 'if)) operands lexenv)
+  (assert (= (length operands) 3))
+  (compile-if (first operands) (second operands) (third operands)
+	      lexenv))
+
 (defun compile-if (test then else lexenv)
   (let ((test (compile-form test lexenv))
 	(then (compile-form then lexenv))
