@@ -7,10 +7,11 @@
 (defun in-agreement (form)
   (let (o1 s1 o2 s2)
     (setf s1 (with-output-to-string (*standard-output*)
-	       (setf o1 (eval form))))
+	       (setf o1 (multiple-value-list (eval form)))))
     (setf s2 (with-output-to-string (*standard-output*)
-	       (setf o2 (exec (compile-form* form)))))
-    (and (eql o1 o2) (equal s1 s2))))
+	       (setf o2 (multiple-value-list
+			 (exec (compile-form* form))))))
+    (and (equal o1 o2) (equal s1 s2))))
 
 (defmacro agrees (form)
   `(is (in-agreement ',form)))
@@ -47,3 +48,7 @@
   (let ((x (random 10)))
     (is (= x (funcall (exec (compile-form* '#'(lambda (x) x))) x)))
     (is (= x (exec (compile-form* `(funcall #'(lambda (x) x) ,x)))))))
+
+(test multiple-values
+  (agrees (multiple-value-call #'list
+	    (values 2 3) 9 (values 4) (values) (values 6))))
