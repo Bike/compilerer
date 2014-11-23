@@ -49,6 +49,9 @@
     (is (= x (funcall (exec (compile-form* '#'(lambda (x) x))) x)))
     (is (= x (exec (compile-form* `(funcall #'(lambda (x) x) ,x)))))))
 
+(test lambda-forms
+  (agrees ((lambda (x) x) 9)))
+
 (test multiple-values
   (agrees (multiple-value-call #'list
 	    (values 2 3) 9 (values 4) (values) (values 6))))
