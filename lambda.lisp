@@ -7,11 +7,13 @@
     (multiple-value-bind (req opt rest key aok-p aux key-p)
 	(parse-ordinary-lambda-list llist)
       (let ((result
-	     (if (or decls
-		     opt rest key aok-p aux key-p
-		     (some (lambda (s) (specialp s lexenv)) llist))
-		 (error "lambda fanciness not supported yet")
-		 (compile-simple-lambda req body lexenv))))
+	     (cond ((or decls
+			(some (lambda (s) (specialp s lexenv)) llist))
+		    (error "lambda specials not supported yet"))
+		   ((or opt rest key aok-p aux key-p)
+		    (compile-complex-lambda req opt rest key aok-p
+					    aux key-p body lexenv))
+		   (t (compile-simple-lambda req body lexenv)))))
 	(prog1
 	    result
 	  ;; doesn't always work, but we go for it anyway.

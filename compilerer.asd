@@ -9,8 +9,11 @@
 	       (:file "call" :depends-on ("function" "form" "package"))
 	       (:file "progn" :depends-on ("form" "package"))
 	       (:file "function" :depends-on ("lambda" "package"))
+	       (:file "complex-lambda"
+		      :depends-on ("form" "progn" "lexenv" "package"))
 	       (:file "lambda"
 		      :depends-on ("progn"
+				   "complex-lambda"
 				   "setq-variable" ; for lookup-symbol
 				   "lexenv" "package"))
 	       (:file "catch-throw" :depends-on ("form" "package"))
