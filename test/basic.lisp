@@ -23,7 +23,7 @@
   (agrees *gensym-counter*)
   (let ((thunk (compile-form* '*gensym-counter*))
 	(*gensym-counter* (1+ *gensym-counter*)))
-    (is (eql (exec thunk) *gensym-counter*))))
+    (is (eql (exec* thunk) *gensym-counter*))))
 
 (test quote
   (agrees (quote foo))
@@ -44,10 +44,10 @@
   (agrees (progn (print 'foo) (+ 18 19))))
 
 (test lambda-simple
-  (is-true (funcall (exec (compile-form* '#'(lambda () t)))))
+  (is-true (funcall (exec* (compile-form* '#'(lambda () t)))))
   (let ((x (random 10)))
-    (is (= x (funcall (exec (compile-form* '#'(lambda (x) x))) x)))
-    (is (= x (exec (compile-form* `(funcall #'(lambda (x) x) ,x)))))))
+    (is (= x (funcall (exec* (compile-form* '#'(lambda (x) x))) x)))
+    (is (= x (exec* (compile-form* `(funcall #'(lambda (x) x) ,x)))))))
 
 (test lambda-forms
   (agrees ((lambda (x) x) 9)))
