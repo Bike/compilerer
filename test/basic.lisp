@@ -10,7 +10,7 @@
 	       (setf o1 (multiple-value-list (eval form)))))
     (setf s2 (with-output-to-string (*standard-output*)
 	       (setf o2 (multiple-value-list
-			 (exec (compile-form* form))))))
+			 (exec* (compile-form* form))))))
     (and (equal o1 o2) (equal s1 s2))))
 
 (defmacro agrees (form)

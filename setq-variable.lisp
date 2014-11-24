@@ -7,8 +7,9 @@
   (compile-setq operands lexenv))
 
 (defstruct (simple-var-lexenv (:include lexenv))
-  "A lambda list with no special variables or partial binding.
-Suitable for simple lambdas and LET, but not LET* or ll keywords."
+  "A lexenv with no special variables or partial binding.
+Suitable for simple lambdas and LET, but not LET* or ll keywords.
+Contrast with complex-var-lexenv."
 ;; extend with decl info (eg types) in the future?
   vars)
 
