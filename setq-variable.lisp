@@ -45,13 +45,13 @@ Contrast with complex-var-lexenv."
 	(compile-lexical pos depth))))
 
 (defun compile-special (symbol)
-  (lambda (frame)
-    (declare (ignore frame))
+  (lambda (stack)
+    (declare (ignore stack))
     (symbol-value symbol)))
 
 (defun compile-lexical (pos depth)
-  (lambda (frame)
-    (aref (nth depth frame) pos)))
+  (lambda (stack)
+    (aref (nth depth stack) pos)))
 
 (defun compile-setq (things lexenv)
   (flet ((compile-%setq (place value)
@@ -69,10 +69,10 @@ Contrast with complex-var-lexenv."
 
 (defun compile-special-setq (place value lexenv)
   (let ((value (compile-form value lexenv)))
-    (lambda (frame)
-      (setf (symbol-value place) (funcall value frame)))))
+    (lambda (stack)
+      (setf (symbol-value place) (funcall value stack)))))
 
 (defun compile-lexical-setq (pos depth value lexenv)
   (let ((value (compile-form value lexenv)))
-    (lambda (frame)
-      (setf (aref (nth depth frame) pos) (funcall value frame)))))
+    (lambda (stack)
+      (setf (aref (nth depth stack) pos) (funcall value stack)))))

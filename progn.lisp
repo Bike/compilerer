@@ -9,9 +9,9 @@
 	 (compiled (make-array len :initial-contents thunks))
 	 ;; there are better ways to do this, to say the least
 	 lazy)
-    (lambda (frame)
+    (lambda (stack)
       (loop for i from 0 below len
-	 do (setf lazy (funcall (aref compiled i) frame))
+	 do (setf lazy (funcall (aref compiled i) stack))
 	 finally (return lazy)))))
 
 (defun compile-progn (forms lexenv)

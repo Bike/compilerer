@@ -8,7 +8,7 @@
   (compile-quote (first operands) lexenv))
 
 (defun compile-constant (constant)
-  (lambda (frame) (declare (ignore frame)) constant))
+  (lambda (stack) (declare (ignore stack)) constant))
 
 (defun compile-quote (thing lexenv)
   (declare (ignore lexenv))

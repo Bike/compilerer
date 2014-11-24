@@ -11,7 +11,7 @@
 		     opt rest key aok-p aux key-p
 		     (some (lambda (s) (specialp s lexenv)) llist))
 		 (error "lambda fanciness not supported yet")
-		 (compile-simple-lambda llist body lexenv))))
+		 (compile-simple-lambda req body lexenv))))
 	(prog1
 	    result
 	  ;; doesn't always work, but we go for it anyway.

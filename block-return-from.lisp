@@ -27,5 +27,5 @@
 (defun compile-return-from (name values-form lexenv)
   (let ((ctag (find-block-tag lexenv name))
 	(thunk (compile-form values-form lexenv)))
-    (lambda (frame)
-      (throw ctag (funcall thunk frame)))))
+    (lambda (stack)
+      (throw ctag (funcall thunk stack)))))

@@ -16,6 +16,6 @@
 (defun compile-flookup (name lexenv)
   ;; TODO: flet/labels
   (declare (ignore lexenv))
-  (lambda (frame)
-    (declare (ignore frame))
+  (lambda (stack)
+    (declare (ignore stack))
     (fdefinition name)))

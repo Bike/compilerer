@@ -50,14 +50,14 @@
 	 (destinations (make-array (length tags))))
     (map-into destinations (lambda (b) (compile-progn (rest b) env))
 	      (rest parsed))
-    (lambda (frame)
+    (lambda (stack)
       (block normal-return
 	(loop
 	   ;; this is a "clever" replacement for (loop (setf dest ...))
 	   for dest = main then
 	     (aref destinations
 		   (catch ctag
-		     (return-from normal-return (funcall dest frame)))))))
+		     (return-from normal-return (funcall dest stack)))))))
     ;; tagbody can't return anything but nil
     nil))
 
@@ -71,4 +71,4 @@
 	 (return ;; just hope host factors out unused variables
 	   (let ((ctag (tagbody-lexenv-ctag lexenv))
 		 (id (cdr maybe)))
-	     (lambda (frame) (declare (ignore frame)) (throw ctag id)))))))))
+	     (lambda (stack) (declare (ignore stack)) (throw ctag id)))))))))
